@@ -18,7 +18,6 @@ Route::get('/', function () {
 });
 
 Auth::routes();
-
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 Route::get('/creacion_producto', [App\Http\Controllers\ControladorProductos::class, 'creacion_producto'])->name('creacion_producto');
 Route::post('/formCreacionProducto', [App\Http\Controllers\ControladorProductos::class, 'formCreacionProducto']);
@@ -27,4 +26,5 @@ Route::get('/creacion_clientes', [App\Http\Controllers\ControladorClientes::clas
 Route::post('/formCreacionCliente', [App\Http\Controllers\ControladorClientes::class, 'formCreacionCliente']);
 Route::get('/lista_clientes', [App\Http\Controllers\ControladorClientes::class, 'lista_clientes'])->name('lista_clientes');
 Route::get('/nuevaFactura', [App\Http\Controllers\ControladorFacturas::class, 'nuevaFactura'])->name('nuevaFactura');
+Route::post('/formNuevaFactura', [App\Http\Controllers\ControladorFacturas::class, 'formNuevaFactura']);
 

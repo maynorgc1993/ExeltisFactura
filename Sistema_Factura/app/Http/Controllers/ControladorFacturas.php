@@ -25,10 +25,40 @@ class ControladorFacturas extends Controller
     public function nuevaFactura()
     {
         $data['clientes'] = DB::select('select * from Cliente');
+        $data['productos'] = DB::select('select * from Producto');
 
         return view('facturas.nuevaFactura', $data);
 
     }
+    public function formNuevaFactura(Request $request){
+        $idCliente = $request->input('selectCliente');
+        $total = $request->input('total');
+        $productos = $request->input('selectProducto');
+        $tamano = count($productos);
+        $total = (float) $total;
+        $total = number_format($total, 2);
+        // echo $total;
+        // dd($request->all());
+
+        $idFactura = time();
+        DB::table('Factura')->insert([
+               'idCliente'=>$idCliente,
+               'idTipo_Pago'=>1,
+               'total'=>$total
+        ]);
+        for($i=1; $i <= $tamano;$i++){
+            DB::table('Factura_Producto')->insert([
+                'idFactura' => $idFactura,
+                'noFactura' => $idFactura,
+                'idProducto' => $productos[$i],
+                'cantidad_producto'=>$cantidad[$i],
+                'subtotal_producto'=>$subProducto[$i]
+         ]);
+        }
+          return redirect()->back()->with('message', 'Factura Creada Correctamente');
+
+    }
+    
     // public function formCreacionCliente(Request $request)
     // {
     //     //dd($request->all());

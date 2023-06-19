@@ -18,44 +18,41 @@
                             {{ session()->get('message') }}
                         </div>
                     @endif
-                    <form action="/formCreacionCliente" method="POST">
+                    <form id="formulario" action="/formNuevaFactura" method="POST">
                     @csrf
                     <div class="row">
                         <div class="col">
-                            <label for="nombreCliente" class="form-label">Nombre del Cliente</label>
-                            <input name="nombreCliente" type="text" class="form-control" placeholder="Nombre del Producto" required>
+                            <label for="selectCliente" class="form-label">Seleccionar Cliente</label>
+                            <select id="selectCliente" class="form-select" name="selectCliente">
+                                <option selected></option>
+                                @foreach($clientes as $cliente)
+                                <option data-nit="{{$cliente->nit}}"  value="{{$cliente->idCliente}}">{{$cliente->nombre}} {{$cliente->apellido}}</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div class="col">
-                            <label for="apellidoCliente" class="form-label">Apellido del Cliente</label>
-                            <input name="apellidoCliente" type="text" class="form-control" placeholder="Nombre del Producto" required>
+                            <label for="nitCliente" class="form-label">Nit del Cliente</label>
+                            <input id="nitCliente" name="nitCliente" type="text" class="form-control" placeholder="NIT" required>
+                        </div>
+                        <div class="col">
+                            <label for="total" class="form-label">Total Factura</label>
+                            <input id="total" name="total" type="text" class="form-control"  required>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col">
-                            <label for="direccionCliente" class="form-label">Direccion del Cliente</label>
-                            <input name="direccionCliente" type="text" class="form-control" placeholder="Direccion del Cliente" required>
-                        </div>
 
-                    </div>
+                    <br>
                     <div class="row">
+
                         <div class="col">
-                            <label for="correo" class="form-label">Correo del Cliente</label>
-                            <input name="correo" type="email" class="form-control" placeholder="cliente@ejemplo.com" required>
+                            <button id="agregarProductoBtn" class="btn btn-secondary " type="button">Agregar Producto</button>
                         </div>
                         <div class="col">
-                            <label for="tel" class="form-label">Tel. del Cliente</label>
-                            <input name="tel" type="text" class="form-control" placeholder="55550000" required>
+                            <button id="verTotalBtn" class="btn btn-warning " type="button">Ver Total</button>
                         </div>
-                        <div class="col">
-                            <label for="nit" class="form-label">NIT. del Cliente</label>
-                            <input name="nit" type="text" class="form-control" placeholder="55550000" required>
-                        </div>
-                    </div><br>
-                    <div class="row">
                         <div class="col">
                             <button class="btn btn-primary " type="submit">ENVIAR</button>
                         </div>
-                    </div>
+                    </div> <br>
                     </form>
                 </div>
             </div>
@@ -63,3 +60,83 @@
     </div>
 </div>
 @endsection
+@prepend('scripts')
+<script>
+    $(document).ready(function() {
+        var contador = 0; //contador producto
+        $('#selectCliente').on('change', function() {
+            var nit = $(this).find(':selected').data('nit');
+            $('#nitCliente').val(nit);
+        });
+        function recalcularSubtotal(contador) {
+            var precioU = parseFloat($('#precioU' + contador).val());
+            var cantidad = parseInt($('#cantidad' + contador).val());
+            var subtotal = precioU * cantidad;
+            $('#subProducto' + contador).val(subtotal);
+        }
+        $('#verTotalBtn').click(function(e) {      
+            var total = 0;
+            $('.filaProducto').each(function() {
+                var subtotal = parseFloat($(this).find('.subProducto').val());        
+                    total += subtotal;
+            });
+                
+                // Mostrar el total
+                $('#total').val(total);
+        });
+        $('#agregarProductoBtn').click(function(e) {
+            contador++;
+
+            var newRow = $('<div class="row filaProducto">' + //agrega la fila del producto
+                            '<div class="col">' +
+                                '<label for="selectProducto' + contador + '" class="form-label">Producto</label>' +
+                                '<select id="selectProducto' + contador + '" class="form-select" name="selectProducto[' + contador + ']">' +
+                                    '<option selected></option>' +
+                                    '@foreach($productos as $producto)' +
+                                    '<option data-precio="{{$producto->precio}}" value="{{$producto->idProducto}}">{{$producto->nombre}}</option>' +
+                                    '@endforeach' +
+                                '</select>' +
+                            '</div>' +
+                            '<div class="col">' +
+                                '<label for="precioU' + contador + '" class="form-label">Precio U.</label>' +
+                                '<input id="precioU' + contador + '" name="precioU[' + contador + ']" type="text" class="form-control"  required>' +
+                            '</div>' +
+                            '<div class="col">' +
+                                '<label for="cantidad' + contador + '" class="form-label">Cantidad</label>' +
+                                '<input value="0" id="cantidad' + contador + '" name="cantidad[' + contador + ']" type="text" class="form-control"  required>' +
+                            '</div>' +
+                            '<div class="col">' +
+                                '<label for="subProducto' + contador + '" class="form-label">Subtotal Producto</label>' +
+                                '<input id="subProducto' + contador + '" name="subProducto[' + contador + ']" type="text" class="form-control subProducto"  required>' +
+                            '</div>' +
+                            '<div class="col">' +
+                                '<br><button class="btn btn-danger eliminarBtn" type="button"><i class="bi bi-trash"></i></button>' +
+                            '</div>' +
+                        '</div>');
+                       
+                        $('#formulario').append(newRow);
+
+                        $('#selectProducto' + contador).change(function() { //cambia el precio del producto
+                        var precio = $(this).find(':selected').data('precio');
+                        $('#precioU' + contador).val(precio);
+
+                            recalcularSubtotal(contador);
+
+                    
+                        $('#cantidad' + contador).change(function() {//cambia subtotal
+                            recalcularSubtotal(contador);
+                        });
+        });
+        });
+        $(document).on('click', '.eliminarBtn', function() {
+            $(this).closest('.row').remove();
+        });
+        $(document).ready(function() {
+    var contador = 0;
+    
+    
+    
+});
+    });
+</script>
+@endprepend
