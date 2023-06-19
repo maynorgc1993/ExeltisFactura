@@ -38,7 +38,7 @@ class ControladorFacturas extends Controller
         $total = (float) $total;
         $total = number_format($total, 2);
         // echo $total;
-        // dd($request->all());
+         dd($request->all());
 
         $idFactura = time();
         DB::table('Factura')->insert([
